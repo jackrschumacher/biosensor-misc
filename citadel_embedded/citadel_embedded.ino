@@ -29,7 +29,33 @@ void loop() {
 
 void readSerialCommand(){
   const int BUFFER_SIZE = 32;
-  
+  static char command_buffer[BUFFER_SIZE+1];
+  static int length = 0;
+
+  if(Serial.available()){
+    char current_value = Serial.read();
+    if((current_value == '\r') || (current_value == '\n')){
+
+      if(length > 0){
+        processSerialCommand();
+      }
+      length = 0;
+    }
+    else{
+      if(length < BUFFER_SIZE){
+        command_buffer[length++];
+        command_buffer[length] = 0;
+      }
+      else{
+        Serial.println("Command buffer overflow");
+
+      }
+    }
+  }
+}
+
+void processSerialCommand(){
+
 }
   
 
