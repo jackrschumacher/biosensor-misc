@@ -1,18 +1,22 @@
-#include <Arduino.h>
+/**
+ * @file main.cpp
+ * @author Jack Schumacher (js0342@uah.edu)
+ * @brief ASTRA Biosensor Citadel fan PWM test script
+ *
+ */
 
-// put function declarations here:
-int myFunction(int, int);
+#include <Arduino.h>
+#include <ESP32Servo.h>
+#include "AstraMisc.h"
+
+#define BLINK
+#define COMMS_UART Serial
+
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  Serial.begin(SERIAL_BAUD);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  
 }
