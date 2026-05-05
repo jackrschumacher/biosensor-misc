@@ -49,7 +49,13 @@ linearActuators chemicalActuators[3] = {
     {9, 8},
     {7, 6}};
 
-bool ledState = false;
+
+int chemicalMove;
+
+// Value of movement to ignore
+double chemicalDeadzone = 0.05;
+// Constraining the speed values for Chemical linear actuators
+float chemActuatorsSpeed = constrain(chemActuatorsSpeed,-1.0,1.0);
 
 // Defined servos (3 for valves, 3 for distributors, 3 for chemicals)
 Servo valve0, valve1, valve2, distributor0, distributor1, distributor2;
@@ -67,17 +73,16 @@ unsigned long lastMotorStatus = 0;
 // Variables for CAN commands- since all servos in a group should be writing the same
 int valveID;
 int chemicalID;
-int millimetersToMove;
+
 int distributorID;
 
+bool ledState = false;
 // Control the NEO550 functioning as the fan motor
 Servo fanMotor;
 
 void setup()
 {
-    // Servo Pins: 13,14,18,19,22,23,25,26,27
-    // Actual pins From bottom facing the USB C port- 25,13,27,18,22
-    // Top Left: 14,26,19,23 (last 2 on the top are not used)
+   
     Serial.begin(SERIAL_BAUD);
     pwm.begin();
     pwm.setOscillatorFrequency(27000000); // Internal oscillator frequency
@@ -205,17 +210,7 @@ void loop()
             {
                 valveID = canData[0];
             }
-            if (canData.size() == 2)
-            {
-                chemicalID = canData[0];
-                millimetersToMove = canData[1];
-                // Multiply for 55 divide by 10 for map - TBD
-                millimetersToMove = ((millimetersToMove * 55) / 30);
-                if (millimetersToMove >= 75)
-                {
-                    millimetersToMove = 75;
-                }
-            }
+            
             if (canData.size() == 4)
             {
                 for (int i = 0; i < 3; i++)
@@ -241,6 +236,11 @@ void loop()
 
         if (commandID == 24)
         {
+            chemicalID = canData[0];
+            chemicalMove = canData[1];
+            if((chemicalID >= 0) && (chemicalID <=2)){
+                
+            }
         }
     }
     // Wiggle every 500ms
