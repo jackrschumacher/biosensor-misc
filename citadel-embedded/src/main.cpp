@@ -49,13 +49,12 @@ linearActuators chemicalActuators[3] = {
     {9, 8},
     {7, 6}};
 
-
 int chemicalMove;
 
 // Value of movement to ignore
 double chemicalDeadzone = 0.05;
 // Constraining the speed values for Chemical linear actuators
-float chemActuatorsSpeed = constrain(chemActuatorsSpeed,-1.0,1.0);
+uint16_t chemActuatorsSpeed = constrain(chemActuatorsSpeed, -1.0, 1.0);
 
 // Defined servos (3 for valves, 3 for distributors, 3 for chemicals)
 Servo valve0, valve1, valve2, distributor0, distributor1, distributor2;
@@ -82,7 +81,7 @@ Servo fanMotor;
 
 void setup()
 {
-   
+
     Serial.begin(SERIAL_BAUD);
     pwm.begin();
     pwm.setOscillatorFrequency(27000000); // Internal oscillator frequency
@@ -196,7 +195,7 @@ void loop()
         }
         Serial.println();
 
-        // Misc CAN commands
+        // Misc CAN commands - ASTRA Embedded Lib
 
         if (commandID == CMD_PING)
         {
@@ -210,7 +209,7 @@ void loop()
             {
                 valveID = canData[0];
             }
-            
+
             if (canData.size() == 4)
             {
                 for (int i = 0; i < 3; i++)
@@ -238,8 +237,24 @@ void loop()
         {
             chemicalID = canData[0];
             chemicalMove = canData[1];
-            if((chemicalID >= 0) && (chemicalID <=2)){
-                
+            chemActuatorsSpeed = (uint16_t)(abs(chemicalMove) * 4095); // Map -1,0,1 values into scale that the actuator can understand
+            if ((chemicalID >= 0) && (chemicalID <= 2))
+            { // Ensure that chemical value is between
+                if (chemActuatorsSpeed > 0)
+                { // Extend
+                    pwm.setPWM(chemicalActuators[chemicalID].chem_increase, 0, chemActuatorsSpeed);
+                    pwm.setPWM(chemicalActuators[chemicalID].chem_decrease, 0, 0);
+                }
+                if (chemActuatorsSpeed == 0)
+                { // Do not move linear actuator
+                    pwm.setPWM(chemicalActuators[chemicalID].chem_increase, 0, 0);
+                    pwm.setPWM(chemicalActuators[chemicalID].chem_decrease, 0, 0);
+                }
+                else
+                { // Retract linear actuator
+                    pwm.setPWM(chemicalActuators[chemicalID].chem_decrease, 0, chemActuatorsSpeed);
+                    pwm.setPWM(chemicalActuators[chemicalID].chem_increase, 0, 0);
+                }
             }
         }
     }
