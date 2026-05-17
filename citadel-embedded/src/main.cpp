@@ -94,6 +94,7 @@ int distributorID;
 bool ledState = false;
 // Control the NEO550 functioning as the fan motor
 Servo fanMotor;
+int fanMotorSpeed;
 
 // Since there is no function in this library for natively writing servos (0-180), take raw angle and write to pwm value for that pin
 void writeServo(uint16_t pin, int angle)
@@ -221,6 +222,15 @@ void loop()
         {
             vicCAN.respond(1); // "pong"
             Serial.println("Received ping over CAN");
+        }
+
+        // PWM fan speed function, map fan speed between -100 to 100 - 0 being stopped, negative values being reverse, positive values being forward
+        if(commandID == 19){
+            if(canData.size() == 1){
+                fanMotorSpeed = canData[0];
+                fanMotorSpeed = (fanMotorSpeed, -100, 100, SERVOMOVEMIN, SERVOMOVEMAX);
+                fanMotor.writeMicroseconds(fanMotorSpeed);
+            }
         }
 
         if (commandID == 40)
